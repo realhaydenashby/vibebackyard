@@ -6,6 +6,10 @@
 	"$schema": "node_modules/wrangler/config-schema.json",
 	"name": "vibebackyard",
 	"main": "worker/index.ts",
+"dev": {
+  "enable_containers": true,
+  "container_engine": "docker"
+},
 	"compatibility_date": "2025-08-10",
 	"compatibility_flags": ["nodejs_compat"],
     "version_metadata": {
