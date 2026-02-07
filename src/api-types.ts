@@ -47,6 +47,25 @@ export type {
   ProfileUpdateData,
 } from 'worker/api/controllers/user/types';
 
+// Project-related API Types
+export type {
+  ProjectListData,
+  ProjectData,
+  ProjectSessionData,
+  ProjectDeleteData,
+  ProjectWithSession
+} from 'worker/api/controllers/project/types';
+
+// Project database schema types
+export type {
+  Project,
+  NewProject,
+  ProjectSession,
+  NewProjectSession,
+  FileEdit,
+  NewFileEdit
+} from 'worker/database/schema';
+
 // Stats API Types
 export type {
   UserStatsData,

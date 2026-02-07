@@ -123,6 +123,7 @@ export type MonacoEditorProps = React.ComponentProps<'div'> & {
 	find?: string;
 	replace?: string;
 	enableTypeScriptFeatures?: 'auto' | boolean;
+	onChange?: (value: string) => void;
 };
 
 export const MonacoEditor = memo<MonacoEditorProps>(function MonacoEditor({
@@ -130,6 +131,7 @@ export const MonacoEditor = memo<MonacoEditorProps>(function MonacoEditor({
 	find,
 	replace,
 	enableTypeScriptFeatures = 'auto',
+	onChange,
 	...props
 }) {
 	const containerRef = useRef<HTMLDivElement>(null);
@@ -232,7 +234,19 @@ export const MonacoEditor = memo<MonacoEditorProps>(function MonacoEditor({
 			editorDomNode.addEventListener('keydown', handleKeydown);
 		}
 
+		// Add onChange listener if provided and editor is not read-only
+		let changeDisposable: monaco.IDisposable | undefined;
+		if (onChange && !createOptions.readOnly) {
+			const model = editor.current.getModel();
+			if (model) {
+				changeDisposable = model.onDidChangeContent(() => {
+					onChange(model.getValue());
+				});
+			}
+		}
+
 		return () => {
+			changeDisposable?.dispose();
 			if (editorDomNode) {
 				editorDomNode.removeEventListener('wheel', handleWheel);
 				editorDomNode.removeEventListener('keydown', handleKeydown);
@@ -244,7 +258,7 @@ export const MonacoEditor = memo<MonacoEditorProps>(function MonacoEditor({
 			editor.current?.dispose();
 		};
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, []);
+	}, [onChange, createOptions.readOnly]);
 
 	useEffect(() => {
 		if (editor.current && createOptions.value !== prevValue.current) {

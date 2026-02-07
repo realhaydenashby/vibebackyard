@@ -229,6 +229,36 @@ export function handleWebSocketMessage(
             //             });
             //         });
             //     break;
+            case WebSocketMessageRequests.UPDATE_FILE:
+                logger.info('Received file update request', {
+                    filePath: parsedMessage.data?.filePath,
+                    contentLength: parsedMessage.data?.content?.length || 0
+                });
+
+                if (!parsedMessage.data?.filePath || !parsedMessage.data?.content) {
+                    sendError(connection, 'Invalid file update request: missing filePath or content');
+                    return;
+                }
+
+                agent.updateFile(
+                    parsedMessage.data.filePath,
+                    parsedMessage.data.content,
+                    connection.userId || 'anonymous'
+                ).then((result) => {
+                    sendToConnection(connection, WebSocketMessageResponses.FILE_UPDATED, {
+                        message: 'File updated successfully',
+                        filePath: parsedMessage.data.filePath,
+                        commitHash: result.commitHash
+                    });
+                }).catch((error: unknown) => {
+                    logger.error('Error updating file:', error);
+                    sendToConnection(connection, WebSocketMessageResponses.FILE_UPDATE_ERROR, {
+                        message: 'Failed to update file',
+                        filePath: parsedMessage.data.filePath,
+                        error: error instanceof Error ? error.message : String(error)
+                    });
+                });
+                break;
             default:
                 sendError(connection, `Unknown message type: ${parsedMessage.type}`);
         }

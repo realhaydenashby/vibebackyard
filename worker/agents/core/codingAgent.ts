@@ -90,9 +90,11 @@ export class CodeGeneratorAgent extends Agent<Env, AgentState> implements AgentI
 
     constructor(ctx: AgentContext, env: Env) {
         super(ctx, env);
-                
+
         void this.sql`CREATE TABLE IF NOT EXISTS full_conversations (id TEXT PRIMARY KEY, messages TEXT)`;
         void this.sql`CREATE TABLE IF NOT EXISTS compact_conversations (id TEXT PRIMARY KEY, messages TEXT)`;
+        // Key-value store for agency integration tokens (Plaid, Stripe, etc.)
+        void this.sql`CREATE TABLE IF NOT EXISTS kv_store (key TEXT PRIMARY KEY, value TEXT)`;
 
         // Create StateManager
         const stateManager = new StateManager(
@@ -538,6 +540,78 @@ export class CodeGeneratorAgent extends Agent<Env, AgentState> implements AgentI
             this.broadcastError('Error processing user input', error);
         }
     }
+
+    /**
+     * Update a file with new content from user editing in Monaco
+     * Writes the file, commits to git with user author, and triggers sandbox reload
+     */
+    async updateFile(filePath: string, content: string, userId: string): Promise<{ commitHash: string }> {
+        try {
+            this.logger().info('Updating file from user edit', {
+                filePath,
+                contentLength: content.length,
+                userId
+            });
+
+            // Validate file path safety
+            const normalizedPath = normalizePath(filePath);
+            if (!isPathSafe(normalizedPath)) {
+                throw new Error(`Unsafe file path: ${filePath}`);
+            }
+
+            // Get current file content for comparison
+            const oldContent = await this.fileManager.readFile(normalizedPath).catch(() => null);
+
+            // Write new content
+            await this.fileManager.writeFile(normalizedPath, content);
+
+            // Update generatedFilesMap to track the file
+            this.state.generatedFilesMap[normalizedPath] = {
+                filePath: normalizedPath,
+                fileContents: content,
+                filePurpose: 'User edited file'
+            };
+
+            // Commit to git with user author
+            const commitMessage = oldContent === null
+                ? `User created: ${normalizedPath}`
+                : `User edited: ${normalizedPath}`;
+
+            await this.git.commit({
+                message: `${commitMessage}\n\nCo-Authored-By: ${userId} <${userId}@vov1.app>`,
+                author: {
+                    name: userId,
+                    email: `${userId}@vov1.app`,
+                    timestamp: Math.floor(Date.now() / 1000)
+                }
+            });
+
+            const commitHash = await this.git.getHead();
+
+            this.logger().info('File updated successfully', {
+                filePath: normalizedPath,
+                commitHash,
+                wasNewFile: oldContent === null
+            });
+
+            // Trigger sandbox reload if a sandbox is running
+            if (this.state.sandboxInstanceId) {
+                try {
+                    await this.deploymentManager.redeployToSandbox();
+                    this.logger().info('Sandbox reloaded after file update');
+                } catch (error) {
+                    this.logger().warn('Failed to reload sandbox after file update:', error);
+                    // Don't throw - file update succeeded, sandbox reload is best-effort
+                }
+            }
+
+            return { commitHash };
+        } catch (error) {
+            this.logger().error('Error updating file:', error);
+            throw error;
+        }
+    }
+
     // ==========================================
     // WebSocket Management
     // ==========================================
@@ -783,6 +857,57 @@ export class CodeGeneratorAgent extends Agent<Env, AgentState> implements AgentI
      */
     clearGitHubToken(): void {
         this.objective.clearGitHubToken();
+    }
+
+    // ==========================================
+    // Plaid Integration (Agency Mode)
+    // ==========================================
+
+    /** Storage key for Plaid access token */
+    private static readonly PLAID_ACCESS_TOKEN_KEY = 'agency:plaid:access_token';
+    private static readonly PLAID_ITEM_ID_KEY = 'agency:plaid:item_id';
+
+    /**
+     * Store Plaid access token in DO storage
+     * Called after successful public_token exchange
+     */
+    async storePlaidAccessToken(accessToken: string, itemId: string): Promise<void> {
+        await this.sql`INSERT OR REPLACE INTO kv_store (key, value) VALUES (${CodeGeneratorAgent.PLAID_ACCESS_TOKEN_KEY}, ${accessToken})`;
+        await this.sql`INSERT OR REPLACE INTO kv_store (key, value) VALUES (${CodeGeneratorAgent.PLAID_ITEM_ID_KEY}, ${itemId})`;
+        this.logger().info('Plaid access token stored', { itemId });
+    }
+
+    /**
+     * Retrieve Plaid access token from DO storage
+     */
+    async getPlaidAccessToken(): Promise<string | null> {
+        const rows = this.sql<{ value: string }>`SELECT value FROM kv_store WHERE key = ${CodeGeneratorAgent.PLAID_ACCESS_TOKEN_KEY}`;
+        return rows.length > 0 ? rows[0].value : null;
+    }
+
+    /**
+     * Retrieve Plaid item ID from DO storage
+     */
+    async getPlaidItemId(): Promise<string | null> {
+        const rows = this.sql<{ value: string }>`SELECT value FROM kv_store WHERE key = ${CodeGeneratorAgent.PLAID_ITEM_ID_KEY}`;
+        return rows.length > 0 ? rows[0].value : null;
+    }
+
+    /**
+     * Clear stored Plaid credentials
+     */
+    async clearPlaidCredentials(): Promise<void> {
+        await this.sql`DELETE FROM kv_store WHERE key = ${CodeGeneratorAgent.PLAID_ACCESS_TOKEN_KEY}`;
+        await this.sql`DELETE FROM kv_store WHERE key = ${CodeGeneratorAgent.PLAID_ITEM_ID_KEY}`;
+        this.logger().info('Plaid credentials cleared');
+    }
+
+    /**
+     * Check if Plaid is connected for this agent
+     */
+    async isPlaidConnected(): Promise<boolean> {
+        const token = await this.getPlaidAccessToken();
+        return token !== null;
     }
 
     // ==========================================

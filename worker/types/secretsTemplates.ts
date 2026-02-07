@@ -160,6 +160,20 @@ export function getTemplatesData(): SecretTemplate[] {
 			required: false,
 			category: 'byok',
 		},
+		{
+			id: 'MOONSHOT_API_KEY_BYOK',
+			displayName: 'Moonshot / Kimi (BYOK)',
+			envVarName: 'MOONSHOT_API_KEY_BYOK',
+			provider: 'moonshot',
+			icon: '🌙',
+			description:
+				'Use your Moonshot API key for Kimi K2.5 multimodal and reasoning models',
+			instructions: 'Go to Moonshot AI Platform → API Keys → Create new key',
+			placeholder: 'sk-... or any format',
+			validation: '^.{10,}$',
+			required: false,
+			category: 'byok',
+		},
 
 		// Development Tools
 		{

@@ -57,6 +57,13 @@ import type{
 	CapabilitiesData,
 	VaultConfigResponse,
 	VaultStatusResponse,
+	ProjectListData,
+	ProjectData,
+	ProjectSessionData,
+	ProjectDeleteData,
+	ProjectWithSession,
+	Project,
+	ProjectSession,
 } from '@/api-types';
 import {
 	RateLimitExceededError,
@@ -561,6 +568,100 @@ class ApiClient {
 	// 		method: 'POST',
 	// 	});
 	// }
+
+	// ===============================
+	// Project API Methods
+	// ===============================
+
+	/**
+	 * Get all projects for the current user
+	 */
+	async getProjects(): Promise<ApiResponse<ProjectListData>> {
+		return this.request<ProjectListData>('/api/projects');
+	}
+
+	/**
+	 * Get a specific project by ID
+	 */
+	async getProject(projectId: string): Promise<ApiResponse<ProjectData>> {
+		return this.request<ProjectData>(`/api/projects/${projectId}`);
+	}
+
+	/**
+	 * Get project by app ID
+	 */
+	async getProjectByAppId(appId: string): Promise<ApiResponse<ProjectData>> {
+		return this.request<ProjectData>(`/api/projects/by-app/${appId}`);
+	}
+
+	/**
+	 * Create a new project
+	 */
+	async createProject(data: {
+		appId: string;
+		name: string;
+		description?: string;
+		thumbnailUrl?: string;
+	}): Promise<ApiResponse<ProjectData>> {
+		return this.request<ProjectData>('/api/projects', {
+			method: 'POST',
+			body: data,
+		});
+	}
+
+	/**
+	 * Update project metadata
+	 */
+	async updateProject(
+		projectId: string,
+		data: {
+			name?: string;
+			description?: string;
+			thumbnailUrl?: string;
+			currentBranch?: string;
+			editorConfig?: Record<string, unknown>;
+		},
+	): Promise<ApiResponse<ProjectData>> {
+		return this.request<ProjectData>(`/api/projects/${projectId}`, {
+			method: 'PATCH',
+			body: data,
+		});
+	}
+
+	/**
+	 * Delete a project
+	 */
+	async deleteProject(projectId: string): Promise<ApiResponse<ProjectDeleteData>> {
+		return this.request<ProjectDeleteData>(`/api/projects/${projectId}`, {
+			method: 'DELETE',
+		});
+	}
+
+	/**
+	 * Get project session state (editor state)
+	 */
+	async getProjectSession(projectId: string): Promise<ApiResponse<ProjectSessionData>> {
+		return this.request<ProjectSessionData>(`/api/projects/${projectId}/session`);
+	}
+
+	/**
+	 * Save project session state (editor state)
+	 */
+	async saveProjectSession(
+		projectId: string,
+		state: {
+			openFiles?: string[];
+			activeFile?: string;
+			cursorPosition?: { line: number; column: number };
+			scrollPosition?: number;
+			unsavedChanges?: boolean;
+		},
+	): Promise<ApiResponse<ProjectSessionData>> {
+		return this.request<ProjectSessionData>(`/api/projects/${projectId}/session`, {
+			method: 'PUT',
+			body: state,
+		});
+	}
 
 	// ===============================
 	// User API Methods

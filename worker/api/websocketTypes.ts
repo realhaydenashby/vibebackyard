@@ -431,6 +431,20 @@ type ServerLogMessage = {
 	source?: string;
 };
 
+type FileUpdatedMessage = {
+	type: 'file_updated';
+	message: string;
+	filePath: string;
+	commitHash?: string;
+};
+
+type FileUpdateErrorMessage = {
+	type: 'file_update_error';
+	message: string;
+	filePath: string;
+	error: string;
+};
+
 // ========== VAULT MESSAGES ==========
 
 /** Sent by client when vault is unlocked via dedicated vault WebSocket */
@@ -619,7 +633,9 @@ export type WebSocketMessage =
 	| ServerLogMessage
 	| VaultUnlockedMessage
 	| VaultLockedMessage
-	| VaultRequiredMessage;
+	| VaultRequiredMessage
+	| FileUpdatedMessage
+	| FileUpdateErrorMessage;
 
 // A type representing all possible message type strings (e.g., 'generation_started', 'file_generating', etc.)
 export type WebSocketMessageType = WebSocketMessage['type'];

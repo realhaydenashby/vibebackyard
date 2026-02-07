@@ -1,6 +1,6 @@
-import { 
-    IDeploymentManager, 
-    DeploymentParams, 
+import {
+    IDeploymentManager,
+    DeploymentParams,
     DeploymentResult,
     SandboxDeploymentCallbacks,
     CloudflareDeploymentCallbacks
@@ -16,6 +16,8 @@ import { getSandboxService } from '../../../services/sandbox/factory';
 import { validateAndCleanBootstrapCommands } from 'worker/agents/utils/common';
 import { DeploymentTarget } from '../../core/types';
 import { BaseProjectState } from '../../core/state';
+import { generatePreviewToken } from '../../../api/routes/plaidProxyRoutes';
+import { getProtocolForHost } from '../../../utils/urls';
 
 const PER_ATTEMPT_TIMEOUT_MS = 60000;  // 60 seconds per individual attempt
 const MASTER_DEPLOYMENT_TIMEOUT_MS = 300000;  // 5 minutes total
@@ -555,13 +557,32 @@ export class DeploymentManager extends BaseAgentService<BaseProjectState> implem
     private async createNewInstance(): Promise<BootstrapResponse | null> {
         const state = this.getState();
         const projectName = state.projectName;
+        const agentId = this.getAgentId();
+        const logger = this.getLog();
+
+        // Base env vars for Agency mode (Plaid proxy tunnel)
+        const customDomain = this.env.CUSTOM_DOMAIN;
+        const protocol = getProtocolForHost(customDomain);
+        const agentUrl = `${protocol}://${customDomain}`;
+
+        let localEnvVars: Record<string, string> = {
+            // Agency mode: Allow preview apps to call back to the Agent DO
+            "VITE_AGENT_URL": agentUrl,
+            "VITE_PREVIEW_TOKEN": await generatePreviewToken(this.env, agentId),
+        };
+
+        logger.info('Injecting Agency env vars', {
+            agentUrl,
+            agentId,
+            hasPreviewToken: true
+        });
 
         // Add AI proxy vars if AI template
-        let localEnvVars: Record<string, string> = {};
         if (state.templateName?.includes('agents')) {
             const secret = this.env.AI_PROXY_JWT_SECRET;
             if (typeof secret === 'string' && secret.trim().length > 0) {
                 localEnvVars = {
+                    ...localEnvVars,
                     "CF_AI_BASE_URL": generateAppProxyUrl(this.env),
                     "CF_AI_API_KEY": await generateAppProxyToken(
                         state.metadata.agentId,
@@ -575,13 +596,12 @@ export class DeploymentManager extends BaseAgentService<BaseProjectState> implem
         // Get latest files
         const files = this.fileManager.getAllFiles();
 
-        this.getLog().info('Files to deploy', {
+        logger.info('Files to deploy', {
             files: files.map(f => f.filePath)
         });
 
         // Create instance
         const client = this.getClient();
-        const logger = this.getLog();
 
         const createResponse = await client.createInstance({
             files,

@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect, useMemo } from 'react';
-import { ArrowRight, Info } from 'react-feather';
+import { ArrowUp, Info } from 'react-feather';
 import { useNavigate } from 'react-router';
 import { useAuth } from '@/contexts/auth-context';
 import { ProjectModeSelector, type ProjectModeOption } from '../components/project-mode-selector';
@@ -7,14 +7,17 @@ import { MAX_AGENT_QUERY_LENGTH, SUPPORTED_IMAGE_MIME_TYPES, type ProjectType } 
 import { useFeature } from '@/features';
 import { useAuthGuard } from '../hooks/useAuthGuard';
 import { usePaginatedApps } from '@/hooks/use-paginated-apps';
+import { useProjects } from '@/hooks/use-projects';
 import { AnimatePresence, LayoutGroup, motion } from 'framer-motion';
 import { AppCard } from '@/components/shared/AppCard';
+import { ProjectCard } from '@/components/shared/ProjectCard';
 import clsx from 'clsx';
 import { useImageUpload } from '@/hooks/use-image-upload';
 import { useDragDrop } from '@/hooks/use-drag-drop';
 import { ImageUploadButton } from '@/components/image-upload-button';
 import { ImageAttachmentPreview } from '@/components/image-attachment-preview';
 import { toast } from 'sonner';
+import { SoftGradientBackground } from '@/components/SoftGradientBackground';
 
 export default function Home() {
 	const navigate = useNavigate();
@@ -66,9 +69,11 @@ export default function Home() {
 
 
 	const placeholderPhrases = useMemo(() => [
-		"todo list app",
-		"F1 fantasy game",
-		"personal finance tracker"
+		"cash flow forecast dashboard",
+		"LP portfolio tracker",
+		"fund performance analytics",
+		"investor reporting portal",
+		"deal pipeline manager"
 	], []);
 	const [currentPlaceholderPhraseIndex, setCurrentPlaceholderPhraseIndex] = useState(0);
 	const [currentPlaceholderText, setCurrentPlaceholderText] = useState("");
@@ -84,8 +89,13 @@ export default function Home() {
 		limit: 6,
 	});
 
-	// Discover section should appear only when enough apps are available and loading is done
+	const {
+		projects,
+		loading: projectsLoading,
+	} = useProjects();
+
 	const discoverReady = useMemo(() => !loading && (apps?.length ?? 0) > 5, [loading, apps]);
+	const projectsReady = useMemo(() => user && !projectsLoading && projects.length > 0, [user, projectsLoading, projects]);
 
 	const handleCreateApp = (query: string, mode: ProjectType) => {
 		if (query.length > MAX_AGENT_QUERY_LENGTH) {
@@ -98,7 +108,6 @@ export default function Home() {
 		const encodedQuery = encodeURIComponent(query);
 		const encodedMode = encodeURIComponent(mode);
 
-		// Encode images as JSON if present
 		const imageParam = images.length > 0 ? `&images=${encodeURIComponent(JSON.stringify(images))}` : '';
 		const intendedUrl = `/chat/new?query=${encodedQuery}&projectType=${encodedMode}${imageParam}`;
 
@@ -112,18 +121,15 @@ export default function Home() {
 			return;
 		}
 
-		// User is already authenticated, navigate immediately
 		navigate(intendedUrl);
-		// Clear images after navigation
 		clearImages();
 	};
 
-	// Auto-resize textarea based on content
 	const adjustTextareaHeight = () => {
 		if (textareaRef.current) {
 			textareaRef.current.style.height = 'auto';
 			const scrollHeight = textareaRef.current.scrollHeight;
-			const maxHeight = 300; // Maximum height in pixels
+			const maxHeight = 300;
 			textareaRef.current.style.height =
 				Math.min(scrollHeight, maxHeight) + 'px';
 		}
@@ -141,23 +147,21 @@ export default function Home() {
 			if (currentPlaceholderText.length < currentPhrase.length) {
 				const timeout = setTimeout(() => {
 					setCurrentPlaceholderText(currentPhrase.slice(0, currentPlaceholderText.length + 1));
-				}, 100); // Typing speed
+				}, 100);
 				return () => clearTimeout(timeout);
 			} else {
-				// Pause before erasing
 				const timeout = setTimeout(() => {
 					setIsPlaceholderTyping(false);
-				}, 2000); // Pause duration
+				}, 2000);
 				return () => clearTimeout(timeout);
 			}
 		} else {
 			if (currentPlaceholderText.length > 0) {
 				const timeout = setTimeout(() => {
 					setCurrentPlaceholderText(currentPlaceholderText.slice(0, -1));
-				}, 50); // Erasing speed
+				}, 50);
 				return () => clearTimeout(timeout);
 			} else {
-				// Move to next phrase
 				setCurrentPlaceholderPhraseIndex((prev) => (prev + 1) % placeholderPhrases.length);
 				setIsPlaceholderTyping(true);
 			}
@@ -168,33 +172,8 @@ export default function Home() {
 
 	return (
 		<div className="relative flex flex-col items-center size-full">
-			{/* Dotted background pattern - extends to full viewport */}
-			<div className="fixed inset-0 text-accent z-0 opacity-20 pointer-events-none">
-				<svg width="100%" height="100%">
-					<defs>
-						<pattern
-							id=":S2:"
-							viewBox="-6 -6 12 12"
-							patternUnits="userSpaceOnUse"
-							width="12"
-							height="12"
-						>
-							<circle
-								cx="0"
-								cy="0"
-								r="1"
-								fill="currentColor"
-							></circle>
-						</pattern>
-					</defs>
-					<rect
-						width="100%"
-						height="100%"
-						fill="url(#:S2:)"
-					></rect>
-				</svg>
-			</div>
-			
+			<SoftGradientBackground />
+
 			<LayoutGroup>
 				<div className="rounded-md w-full max-w-2xl overflow-hidden">
 					<motion.div
@@ -202,12 +181,26 @@ export default function Home() {
 						transition={{ layout: { duration: 0.5, ease: [0.22, 1, 0.36, 1] } }}
 						className={clsx(
 							"px-6 p-8 flex flex-col items-center z-10",
-							discoverReady ? "mt-48" : "mt-[20vh] sm:mt-[24vh] md:mt-[28vh]"
+							discoverReady ? "mt-36" : "mt-[20vh] sm:mt-[24vh] md:mt-[28vh]"
 						)}>
-						<h1 className="text-shadow-sm text-shadow-red-200 dark:text-shadow-red-900 text-accent font-medium leading-[1.1] tracking-tight text-5xl w-full mb-4 bg-clip-text bg-gradient-to-r from-text-primary to-text-primary/90">
-							What should we build today?
+
+						{/* Logo */}
+						<h1
+							className="font-[departureMono] text-6xl tracking-tight mb-2 select-none"
+							style={{ color: '#F4F6FF' }}
+						>
+							vo<span style={{ color: '#27D7FF' }}>&#9661;</span>1
 						</h1>
 
+						{/* Tagline */}
+						<p
+							className="text-sm tracking-[0.3em] uppercase mb-10 font-light"
+							style={{ color: 'rgba(244, 246, 255, 0.5)' }}
+						>
+							Financial Clarity
+						</p>
+
+						{/* Input form */}
 						<form
 							method="POST"
 							onSubmit={(e) => {
@@ -215,26 +208,36 @@ export default function Home() {
 								const query = textareaRef.current!.value;
 								handleCreateApp(query, projectMode);
 							}}
-							className="flex z-10 flex-col w-full min-h-[150px] bg-bg-4 border border-accent/30 dark:border-accent/50 dark:bg-bg-2 rounded-[18px] shadow-textarea p-5 transition-all duration-200"
+							className="flex z-10 flex-col w-full rounded-full px-5 py-3 transition-all duration-300 landing-input-pill"
+							style={{
+								background: 'rgba(244, 246, 255, 0.06)',
+								border: '1px solid rgba(244, 246, 255, 0.1)',
+							}}
 						>
-							<div 
+							<div
 								className={clsx(
-									"flex-1 flex flex-col relative",
-									isDragging && "ring-2 ring-accent ring-offset-2 rounded-lg"
+									"flex items-center gap-3",
+									isDragging && "ring-2 ring-[#27D7FF] ring-offset-2 ring-offset-[#07080D] rounded-full"
 								)}
 								{...dragHandlers}
 							>
 								{isDragging && (
-									<div className="absolute inset-0 flex items-center justify-center bg-accent/10 backdrop-blur-sm rounded-lg z-30 pointer-events-none">
-										<p className="text-accent font-medium">Drop images here</p>
+									<div className="absolute inset-0 flex items-center justify-center rounded-full z-30 pointer-events-none"
+										style={{ background: 'rgba(39, 215, 255, 0.08)' }}
+									>
+										<p className="text-sm font-medium" style={{ color: '#27D7FF' }}>Drop images here</p>
 									</div>
 								)}
 								<textarea
-									className="w-full resize-none ring-0 z-20 outline-0 placeholder:text-text-primary/60 text-text-primary"
+									className="flex-1 resize-none ring-0 z-20 outline-0 bg-transparent text-sm leading-relaxed"
 									name="query"
+									rows={1}
 									value={query}
 									placeholder={`Create a ${currentPlaceholderText}`}
 									ref={textareaRef}
+									style={{
+										color: '#F4F6FF',
+									}}
 									onChange={(e) => {
 										setQuery(e.target.value);
 										adjustTextareaHeight();
@@ -248,31 +251,7 @@ export default function Home() {
 										}
 									}}
 								/>
-								{images.length > 0 && (
-									<div className="mt-3">
-										<ImageAttachmentPreview
-											images={images}
-											onRemove={removeImage}
-										/>
-									</div>
-								)}
-							</div>
-							<div
-								className={clsx(
-									'flex items-center mt-4 pt-1',
-									showModeSelector ? 'justify-between' : 'justify-end',
-								)}
-							>
-								{showModeSelector && (
-									<ProjectModeSelector
-										value={projectMode}
-										onChange={setProjectMode}
-										modes={modeOptions}
-										className="flex-1"
-									/>
-								)}
-
-								<div className={clsx('flex items-center gap-2', showModeSelector && 'ml-4')}>
+								<div className="flex items-center gap-2 flex-shrink-0">
 									<ImageUploadButton
 										onFilesSelected={addImages}
 										disabled={isProcessing}
@@ -280,35 +259,96 @@ export default function Home() {
 									<button
 										type="submit"
 										disabled={!query.trim()}
-										className="bg-accent text-white p-1 rounded-md *:size-5 transition-all duration-200 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+										className="flex items-center justify-center w-9 h-9 rounded-full transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed"
+										style={{
+											backgroundColor: query.trim() ? '#27D7FF' : 'rgba(244, 246, 255, 0.1)',
+											color: query.trim() ? '#07080D' : 'rgba(244, 246, 255, 0.3)',
+										}}
 									>
-										<ArrowRight />
+										<ArrowUp className="w-4 h-4" />
 									</button>
 								</div>
 							</div>
 						</form>
+
+						{/* Mode selector below input when multiple modes */}
+						{showModeSelector && (
+							<div className="mt-4 w-full flex justify-center">
+								<ProjectModeSelector
+									value={projectMode}
+									onChange={setProjectMode}
+									modes={modeOptions}
+								/>
+							</div>
+						)}
 					</motion.div>
 
 				</div>
 
+				{/* Image attachment info */}
 				<AnimatePresence>
 					{images.length > 0 && (
 						<motion.div
 							initial={{ opacity: 0, y: -10 }}
 							animate={{ opacity: 1, y: 0 }}
 							exit={{ opacity: 0, y: -10 }}
-							className="w-full max-w-2xl px-6"
+							className="w-full max-w-2xl px-6 mt-4"
 						>
-							<div className="flex items-start gap-2 px-4 py-3 rounded-xl bg-bg-4/50 dark:bg-bg-2/50 border border-accent/20 dark:border-accent/30 shadow-sm">
-								<Info className="size-4 text-accent flex-shrink-0 mt-0.5" />
-								<p className="text-xs text-text-tertiary leading-relaxed">
-									<span className="font-medium text-text-secondary">Images Beta:</span> Images guide app layout and design but may not be replicated exactly. The coding agent cannot access images directly for app assets.
+							<ImageAttachmentPreview
+								images={images}
+								onRemove={removeImage}
+							/>
+							<div className="flex items-start gap-2 px-4 py-3 mt-2 rounded-xl"
+								style={{
+									background: 'rgba(39, 215, 255, 0.06)',
+									border: '1px solid rgba(39, 215, 255, 0.15)',
+								}}
+							>
+								<Info className="size-4 flex-shrink-0 mt-0.5" style={{ color: '#27D7FF' }} />
+								<p className="text-xs leading-relaxed" style={{ color: 'rgba(244, 246, 255, 0.5)' }}>
+									<span className="font-medium" style={{ color: 'rgba(244, 246, 255, 0.7)' }}>Images Beta:</span> Images guide app layout and design but may not be replicated exactly.
 								</p>
 							</div>
 						</motion.div>
 					)}
 				</AnimatePresence>
 
+				{/* Projects section */}
+				<AnimatePresence>
+					{projectsReady && (
+						<motion.section
+							key="projects-section"
+							layout
+							initial={{ opacity: 0, height: 0 }}
+							animate={{ opacity: 1, height: "auto" }}
+							exit={{ opacity: 0, height: 0 }}
+							transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+							className={clsx('max-w-6xl mx-auto px-4 z-10', images.length > 0 ? 'mt-10' : 'mt-16 mb-8')}
+						>
+							<div className='flex flex-col items-start'>
+								<h2 className="text-2xl font-medium" style={{ color: 'rgba(244, 246, 255, 0.8)' }}>My Projects</h2>
+								<div className="text-md font-light mb-4" style={{ color: 'rgba(244, 246, 255, 0.35)' }}>Continue where you left off</div>
+								<motion.div
+									layout
+									transition={{ duration: 0.4 }}
+									className="grid grid-cols-2 xl:grid-cols-3 gap-6 w-full"
+								>
+									<AnimatePresence mode="popLayout">
+										{projects.slice(0, 6).map(project => (
+											<ProjectCard
+												key={project.id}
+												project={project}
+												onClick={() => navigate(`/project/${project.id}`)}
+											/>
+										))}
+									</AnimatePresence>
+								</motion.div>
+							</div>
+						</motion.section>
+					)}
+				</AnimatePresence>
+
+				{/* Discover section */}
 				<AnimatePresence>
 					{discoverReady && (
 						<motion.section
@@ -318,11 +358,11 @@ export default function Home() {
 							animate={{ opacity: 1, height: "auto" }}
 							exit={{ opacity: 0, height: 0 }}
 							transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-							className={clsx('max-w-6xl mx-auto px-4 z-10', images.length > 0 ? 'mt-10' : 'mt-16 mb-8')}
+							className={clsx('max-w-6xl mx-auto px-4 z-10', (images.length > 0 || projectsReady) ? 'mt-10' : 'mt-16 mb-8')}
 						>
 							<div className='flex flex-col items-start'>
-								<h2 className="text-2xl font-medium text-text-secondary/80">Discover Apps built by the community</h2>
-								<div ref={discoverLinkRef} className="text-md font-light mb-4 text-text-tertiary hover:underline underline-offset-4 select-text cursor-pointer" onClick={() => navigate('/discover')} >View All</div>
+								<h2 className="text-2xl font-medium" style={{ color: 'rgba(244, 246, 255, 0.8)' }}>Discover</h2>
+								<div ref={discoverLinkRef} className="text-md font-light mb-4 hover:underline underline-offset-4 select-text cursor-pointer" style={{ color: 'rgba(244, 246, 255, 0.35)' }} onClick={() => navigate('/discover')} >View All</div>
 								<motion.div
 									layout
 									transition={{ duration: 0.4 }}
@@ -400,13 +440,11 @@ export const CurvedArrow: React.FC<ArrowProps> = ({
 
 		const endPoint: Point = { x: target.x, y: target.y };
 
-		// Choose an anchor on the source: midpoint of the side facing the target
 		const centers = {
 			right: { x: rect.right, y: rect.top + rect.height / 2 },
 			left: { x: rect.left, y: rect.top + rect.height / 2 },
 		};
 
-		// Distances to target from each side center
 		const dists = Object.fromEntries(
 			Object.entries(centers).map(([side, p]) => [
 				side,
@@ -417,7 +455,6 @@ export const CurvedArrow: React.FC<ArrowProps> = ({
 		const bestSide = (Object.entries(dists).sort((a, b) => a[1] - b[1])[0][0] ||
 			"right") as keyof typeof centers;
 
-		// Nudge start point slightly outside the element for visual clarity
 		const nudge = (p: Point, side: keyof typeof centers, offset: number) => {
 			switch (side) {
 				case "right":
@@ -433,7 +470,6 @@ export const CurvedArrow: React.FC<ArrowProps> = ({
 		setEnd(endPoint);
 	};
 
-	// Throttle updates with rAF to avoid layout thrash
 	const scheduleCompute = () => {
 		if (rafRef.current != null) cancelAnimationFrame(rafRef.current);
 		rafRef.current = requestAnimationFrame(compute);
@@ -451,7 +487,6 @@ export const CurvedArrow: React.FC<ArrowProps> = ({
 		window.addEventListener("scroll", onScroll, { passive: true });
 		window.addEventListener("resize", onResize);
 
-		// Track source element size changes
 		const el = sourceRef.current;
 		if ("ResizeObserver" in window) {
 			roRef.current = new ResizeObserver(() => scheduleCompute());
@@ -475,8 +510,6 @@ export const CurvedArrow: React.FC<ArrowProps> = ({
 		const dx = end.x - start.x;
 		const dy = end.y - start.y;
 
-		// Control points: bend the curve based on the primary axis difference.
-		// This gives a nice S or C curve without sharp kinks.
 		const cpOffset = Math.max(Math.abs(dx), Math.abs(dy)) * curvature;
 
 		const c1: Point = { x: start.x + cpOffset * (dx >= 0 ? 1 : -1), y: start.y };
@@ -511,16 +544,14 @@ export const CurvedArrow: React.FC<ArrowProps> = ({
 					<feDisplacementMap in="SourceGraphic" in2="noise" scale="1" xChannelSelector="R" yChannelSelector="G" />
 				</filter>
 				<marker id="discover-arrowhead" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto" markerUnits="strokeWidth" opacity={0.20}>
-					<path d="M 0 1.2 L 7 4" stroke="var(--color-text-tertiary)" strokeWidth="1.6" strokeLinecap="round" fill="none" />
-					<path d="M 0 6.8 L 7 4" stroke="var(--color-text-tertiary)" strokeWidth="1.2" strokeLinecap="round" fill="none" />
+					<path d="M 0 1.2 L 7 4" stroke="rgba(244, 246, 255, 0.35)" strokeWidth="1.6" strokeLinecap="round" fill="none" />
+					<path d="M 0 6.8 L 7 4" stroke="rgba(244, 246, 255, 0.35)" strokeWidth="1.2" strokeLinecap="round" fill="none" />
 				</marker>
 			</defs>
 
 			<path
 				d={d}
-				// stroke="var(--color-accent)"
-				stroke="var(--color-text-tertiary)"
-				strokeOpacity={0.20}
+				stroke="rgba(244, 246, 255, 0.15)"
 				strokeWidth={1.6}
 				fill="none"
 				strokeLinecap="round"
@@ -528,13 +559,10 @@ export const CurvedArrow: React.FC<ArrowProps> = ({
 				vectorEffect="non-scaling-stroke"
 				markerEnd="url(#discover-arrowhead)"
 			/>
-			{/* Soft squiggle overlay for hand-drawn feel */}
 			<g filter="url(#discover-squiggle)">
 				<path
 					d={d}
-					// stroke="var(--color-accent)"
-					stroke="var(--color-text-tertiary)"
-					strokeOpacity={0.12}
+					stroke="rgba(244, 246, 255, 0.08)"
 					strokeWidth={1}
 					fill="none"
 					strokeLinecap="round"

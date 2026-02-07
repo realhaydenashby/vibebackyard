@@ -570,3 +570,95 @@ export type NewUserModelProvider = typeof userModelProviders.$inferInsert;
 
 export type Star = typeof stars.$inferSelect;
 export type NewStar = typeof stars.$inferInsert;
+
+// ========================================
+// PROJECT WORKSPACE MANAGEMENT
+// ========================================
+
+/**
+ * Projects table - Persistent development projects
+ * Enables users to resume editing projects across sessions
+ */
+export const projects = sqliteTable('projects', {
+    id: text('id').primaryKey(),
+    userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+    appId: text('app_id').notNull().references(() => apps.id, { onDelete: 'cascade' }),
+
+    // Project Metadata
+    name: text('name').notNull(),
+    description: text('description'),
+    thumbnailUrl: text('thumbnail_url'),
+
+    // Editor State
+    lastOpenedAt: integer('last_opened_at', { mode: 'timestamp' }).notNull(),
+    currentBranch: text('current_branch').default('main'),
+    editorConfig: text('editor_config', { mode: 'json' }).default('{}'), // { theme, fontSize, keybindings }
+
+    // Timestamps
+    createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: integer('updated_at', { mode: 'timestamp' }).default(sql`CURRENT_TIMESTAMP`),
+}, (table) => ({
+    userIdIdx: index('projects_user_id_idx').on(table.userId),
+    appIdIdx: index('projects_app_id_idx').on(table.appId),
+    lastOpenedAtIdx: index('projects_last_opened_at_idx').on(table.lastOpenedAt),
+}));
+
+/**
+ * Project Sessions table - Editor state persistence
+ * Stores which files are open, cursor position, scroll state
+ */
+export const projectSessions = sqliteTable('project_sessions', {
+    id: text('id').primaryKey(),
+    projectId: text('project_id').notNull().references(() => projects.id, { onDelete: 'cascade' }),
+
+    // Editor State
+    openFiles: text('open_files', { mode: 'json' }).default('[]'), // Array of file paths
+    activeFile: text('active_file'), // Current file path
+    cursorPosition: text('cursor_position', { mode: 'json' }), // { line, column }
+    scrollPosition: integer('scroll_position'),
+
+    // Change Tracking
+    unsavedChanges: integer('unsaved_changes', { mode: 'boolean' }).default(false),
+    lastSavedAt: integer('last_saved_at', { mode: 'timestamp' }),
+
+    // Timestamps
+    createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: integer('updated_at', { mode: 'timestamp' }).default(sql`CURRENT_TIMESTAMP`),
+}, (table) => ({
+    projectIdIdx: index('project_sessions_project_id_idx').on(table.projectId),
+}));
+
+/**
+ * File Edits table - Audit trail of all file changes
+ * Tracks both user edits and AI-generated changes
+ */
+export const fileEdits = sqliteTable('file_edits', {
+    id: text('id').primaryKey(),
+    projectId: text('project_id').notNull().references(() => projects.id, { onDelete: 'cascade' }),
+    filePath: text('file_path').notNull(),
+    userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+
+    // Edit Details
+    editType: text('edit_type', { enum: ['user', 'ai'] }).notNull(),
+    contentBefore: text('content_before'),
+    contentAfter: text('content_after'),
+    commitHash: text('commit_hash'),
+
+    // Timestamps
+    createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`CURRENT_TIMESTAMP`),
+}, (table) => ({
+    projectIdIdx: index('file_edits_project_id_idx').on(table.projectId),
+    userIdIdx: index('file_edits_user_id_idx').on(table.userId),
+    filePathIdx: index('file_edits_file_path_idx').on(table.filePath),
+    editTypeIdx: index('file_edits_edit_type_idx').on(table.editType),
+    createdAtIdx: index('file_edits_created_at_idx').on(table.createdAt),
+}));
+
+export type Project = typeof projects.$inferSelect;
+export type NewProject = typeof projects.$inferInsert;
+
+export type ProjectSession = typeof projectSessions.$inferSelect;
+export type NewProjectSession = typeof projectSessions.$inferInsert;
+
+export type FileEdit = typeof fileEdits.$inferSelect;
+export type NewFileEdit = typeof fileEdits.$inferInsert;

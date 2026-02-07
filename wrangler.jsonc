@@ -16,7 +16,7 @@
         "binding": "CF_VERSION_METADATA"
     },
 	"assets": {
-		"directory": "dist",
+		"directory": "dist/client",
 		"not_found_handling": "single-page-application",
 		// "run_worker_first": ["!/src/*", "!/api/docs/*"],
         "run_worker_first": true,
@@ -62,16 +62,13 @@
 	"containers": [
 		{
 			"class_name": "UserAppSandboxService",
-			"image": "./SandboxDockerfile",
+            "name": "sandbox",
+            "image": "./SandboxDockerfile",
             // "image": "registry.cloudflare.com/vibesdk-production-userappsandboxservice:cfe197fc",
             // Altering max_instances value will have no effect. Please use the MAX_SANDBOX_INSTANCES var instead.
-			"max_instances": 1400,
+			"max_instances": 10,
             // ATTENTION: Altering instance_type value will have no effect. Please use the SANDBOX_INSTANCE_TYPE var instead.
-            "instance_type": {
-                "vcpu": 4,
-                "memory_mib": 8192,
-                "disk_mb": 10240
-            },
+            "instance_type": "standard-3",
             "rollout_step_percentage": 100
 		}
 	],
@@ -92,7 +89,7 @@
 			},
             {
                 "class_name": "UserAppSandboxService",
-                "name": "Sandbox"
+                "name": "sandbox"
             },
             {
                 "class_name": "DORateLimitStore",
@@ -143,15 +140,8 @@
         }
 	],
 	"routes": [
-        {
-            "pattern": "build.cloudflare.dev",
-            "custom_domain": true
-        },
-        {
-            "pattern": "*build-preview.cloudflare.dev/*",
-            "custom_domain": false,
-            "zone_id": "db01fac4261b2604aacad8410443a3e2"
-        }
+        { "pattern": "vov1.app", "custom_domain": true },
+        { "pattern": "*vov1.app/*", "custom_domain": false, "zone_id": "850caa93a081f8d927f9cca0c3e05887" }
     ],
 	"vars": {
         "TEMPLATES_REPOSITORY": "https://github.com/cloudflare/vibesdk-templates",
@@ -159,6 +149,7 @@
         "DISPATCH_NAMESPACE": "vibesdk-default-namespace",
         "ENABLE_READ_REPLICAS": "true",
         "CLOUDFLARE_AI_GATEWAY": "vibesdk-gateway",
+        "CUSTOM_DOMAIN": "vov1.app",
         "PLATFORM_CAPABILITIES": {
             "features": {
                 "app": {
@@ -176,6 +167,6 @@
         "MAX_SANDBOX_INSTANCES": "10",
         "SANDBOX_INSTANCE_TYPE": "standard-3"
     },
-	"workers_dev": false,
+	"workers_dev": true,
 	"preview_urls": false
 }

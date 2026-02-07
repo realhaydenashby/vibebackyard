@@ -337,7 +337,39 @@ const MODELS_MASTER = {
             creditCost: 8, // $0.22
             contextSize: 262144, // 256K Context
         },
-    }
+    },
+
+    // --- Moonshot (Kimi) Models ---
+    KIMI_K2_5: {
+        id: 'moonshot/kimi-k2.5',
+        config: {
+            name: 'Kimi K2.5',
+            size: ModelSize.LARGE,
+            provider: 'moonshot',
+            creditCost: 2, // $0.45/1M input
+            contextSize: 262144, // 256K Context
+        },
+    },
+    KIMI_K2: {
+        id: 'moonshot/kimi-k2',
+        config: {
+            name: 'Kimi K2',
+            size: ModelSize.REGULAR,
+            provider: 'moonshot',
+            creditCost: 1, // Lower cost base model
+            contextSize: 131072, // 128K Context
+        },
+    },
+    KIMI_K2_THINKING: {
+        id: 'moonshot/kimi-k2-thinking',
+        config: {
+            name: 'Kimi K2 Thinking',
+            size: ModelSize.LARGE,
+            provider: 'moonshot',
+            creditCost: 3, // Reasoning model premium
+            contextSize: 262144, // 256K Context
+        },
+    },
 } as const;
 
 /**

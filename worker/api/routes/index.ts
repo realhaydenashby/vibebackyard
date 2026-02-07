@@ -12,6 +12,8 @@ import { setupScreenshotRoutes } from './imagesRoutes';
 import { setupSentryRoutes } from './sentryRoutes';
 import { setupCapabilitiesRoutes } from './capabilitiesRoutes';
 import { setupTicketRoutes } from './ticketRoutes';
+import { setupPlaidProxyRoutes } from './plaidProxyRoutes';
+import { setupProjectRoutes } from './projectRoutes';
 import { Hono } from "hono";
 import { AppEnv } from "../../types/appenv";
 import { setupStatusRoutes } from './statusRoutes';
@@ -45,7 +47,10 @@ export function setupRoutes(app: Hono<AppEnv>): void {
     
     // App management routes
     setupAppRoutes(app);
-    
+
+    // Project management routes
+    setupProjectRoutes(app);
+
     // Stats routes
     setupStatsRoutes(app);
     
@@ -69,4 +74,7 @@ export function setupRoutes(app: Hono<AppEnv>): void {
 
     // Screenshot serving routes (public)
     setupScreenshotRoutes(app);
+
+    // Plaid proxy routes for Agency mode (public - uses preview token auth)
+    setupPlaidProxyRoutes(app);
 }

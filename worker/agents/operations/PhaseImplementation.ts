@@ -70,6 +70,7 @@ export class PhaseImplementationOperation extends AgentOperation<PhasicGeneratio
 
         const fixedFilePromises: Promise<FileOutputType>[] = [];
 
+        // v1.1: Always use standard config (finance-only platform, configs updated to high reasoning)
         const agentActionName = inputs.isFirstPhase ? 'firstPhaseImplementation' : 'phaseImplementation';
 
         const shouldEnableRealtimeCodeFixer = inputs.shouldAutoFix && IsRealtimeCodeFixerEnabled(options.inferenceContext);

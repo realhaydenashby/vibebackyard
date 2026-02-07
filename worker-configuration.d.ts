@@ -50,8 +50,12 @@ declare namespace Cloudflare {
 		SENTRY_DSN: string;
 		USE_TUNNEL_FOR_PREVIEW: string;
 		USE_CLOUDFLARE_IMAGES: string;
+		// Plaid API credentials (Agency mode)
+		PLAID_CLIENT_ID: string;
+		PLAID_SECRET: string;
+		PLAID_ENV: string; // 'sandbox' | 'development' | 'production'
 		CodeGenObject: DurableObjectNamespace<import("./worker/index").CodeGeneratorAgent>;
-		Sandbox: DurableObjectNamespace<import("./worker/index").UserAppSandboxService>;
+		sandbox: DurableObjectNamespace<import("./worker/index").UserAppSandboxService>;
 		DORateLimitStore: DurableObjectNamespace<import("./worker/index").DORateLimitStore>;
 		UserSecretsStore: DurableObjectNamespace<import("./worker/index").UserSecretsStore>;
 		TEMPLATES_BUCKET: R2Bucket;

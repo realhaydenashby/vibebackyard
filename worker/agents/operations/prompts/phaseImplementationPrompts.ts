@@ -36,7 +36,9 @@ ${PROMPT_UTILS.COMMON_DEP_DOCUMENTATION}
 
 <BLUEPRINT>
 {{blueprint}}
-</BLUEPRINT>`;
+</BLUEPRINT>
+
+{{financeCodePatterns}}`;
 
 const PHASE_IMPLEMENTATION_USER_PROMPT_TEMPLATE = `Phase Implementation
 

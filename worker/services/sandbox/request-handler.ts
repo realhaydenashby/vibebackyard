@@ -12,7 +12,7 @@ const logger = createObjectLogger({
 });
 
 export interface SandboxEnv {
-  Sandbox: DurableObjectNamespace<Sandbox>;
+  sandbox: DurableObjectNamespace<Sandbox>;
 }
 
 export interface RouteInfo {
@@ -35,7 +35,7 @@ export async function proxyToSandbox<E extends SandboxEnv>(
     }
 
     const { sandboxId, port, path, token } = routeInfo;
-    const sandbox = getSandbox(env.Sandbox, sandboxId);
+    const sandbox = getSandbox(env.sandbox, sandboxId);
 
     logger.info("[Proxy] Sandbox", sandbox, "Port", port, "Path", path, "Token", token);
 

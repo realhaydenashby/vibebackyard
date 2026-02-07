@@ -114,6 +114,11 @@ export class CsrfService {
         if (apiKeyHeader) {
             return true;
         }
+        // Skip for Agency mode preview token (used by preview apps calling Plaid proxy)
+        const previewToken = request.headers.get('X-Preview-Token');
+        if (previewToken) {
+            return true;
+        }
 
         // Skip for WebSocket upgrades
         const upgradeHeader = request.headers.get('upgrade');

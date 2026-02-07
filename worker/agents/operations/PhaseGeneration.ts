@@ -79,6 +79,8 @@ ${PROMPT_UTILS.COMMON_DEP_DOCUMENTATION}
 {{blueprint}}
 </BLUEPRINT>
 
+{{financeArchitectureRules}}
+
 <DEPENDENCIES>
 **Available Dependencies:** You can ONLY import and use dependencies from the following==>
 
@@ -302,11 +304,12 @@ export class PhaseGenerationOperation extends AgentOperation<PhasicGenerationCon
                 ...getSystemPromptWithProjectContext(SYSTEM_PROMPT, context),
                 userMessage
             ];
-    
+
+            // v1.1: Always use finance config (finance-only platform)
             const results = await executeInference({
                 env: env,
                 messages,
-                agentActionName: "phaseGeneration",
+                agentActionName: 'phaseGeneration',
                 schema: PhaseConceptGenerationSchema,
                 context: options.inferenceContext,
                 reasoning_effort: (userContext?.suggestions || issues.runtimeErrors.length > 0) ? AGENT_CONFIG.phaseGeneration.reasoning_effort == 'low' ? 'medium' : 'high' : undefined,

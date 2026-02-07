@@ -309,6 +309,11 @@ export async function getConfigurationForModel(
                     baseURL: 'https://api.anthropic.com/v1/',
                     apiKey: env.ANTHROPIC_API_KEY,
                 };
+            case 'moonshot':
+                return {
+                    baseURL: 'https://api.moonshot.ai/v1',
+                    apiKey: await getApiKey('moonshot', env, userId, runtimeOverrides),
+                };
             default:
                 providerForcedOverride = modelConfig.provider as AIGatewayProviders;
                 break;

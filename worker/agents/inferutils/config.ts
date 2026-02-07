@@ -40,10 +40,11 @@ const COMMON_AGENT_CONFIGS = {
     },
 } as const;
 
+// v1.1: Finance-only platform - use higher reasoning for better data architecture
 const SHARED_IMPLEMENTATION_CONFIG = {
-    reasoning_effort: 'low' as const,
-    max_tokens: 48000,
-    temperature: 1,
+    reasoning_effort: 'high' as const,  // Increased for finance apps
+    max_tokens: 64000,                  // More tokens for complex code
+    temperature: 0.3,                   // More deterministic
     fallbackModel: AIModels.GEMINI_2_5_PRO,
 };
 
@@ -58,50 +59,50 @@ Cloudflare AI Gateway unified billing for seamless model access without managing
 const PLATFORM_AGENT_CONFIG: AgentConfig = {
     ...COMMON_AGENT_CONFIGS,
     blueprint: {
-        name: AIModels.GEMINI_3_PRO_PREVIEW,
+        name: AIModels.GEMINI_2_5_PRO,
         reasoning_effort: 'high',
         max_tokens: 20000,
         fallbackModel: AIModels.GEMINI_2_5_FLASH,
         temperature: 1.0,
     },
     projectSetup: {
-        name: AIModels.GROK_4_1_FAST,
+        name: AIModels.GEMINI_2_5_PRO,
         reasoning_effort: 'medium',
         max_tokens: 8000,
         temperature: 1,
-        fallbackModel: AIModels.GEMINI_2_5_PRO,
+        fallbackModel: AIModels.GEMINI_2_5_FLASH,
     },
     phaseGeneration: {
-        name: AIModels.GEMINI_3_FLASH_PREVIEW,
+        name: AIModels.GEMINI_2_5_PRO,
         reasoning_effort: 'medium',
         max_tokens: 8000,
         temperature: 1,
-        fallbackModel: AIModels.OPENAI_5_MINI,
+        fallbackModel: AIModels.GEMINI_2_5_FLASH,
     },
     firstPhaseImplementation: {
-        name: AIModels.GEMINI_3_FLASH_PREVIEW,
+        name: AIModels.GEMINI_2_5_PRO,
         ...SHARED_IMPLEMENTATION_CONFIG,
     },
     phaseImplementation: {
-        name: AIModels.GEMINI_3_FLASH_PREVIEW,
+        name: AIModels.GEMINI_2_5_PRO,
         ...SHARED_IMPLEMENTATION_CONFIG,
     },
     conversationalResponse: {
-        name: AIModels.GROK_4_1_FAST,
+        name: AIModels.GEMINI_2_5_FLASH,
         reasoning_effort: 'low',
         max_tokens: 4000,
         temperature: 1,
         fallbackModel: AIModels.GEMINI_2_5_FLASH,
     },
     deepDebugger: {
-        name: AIModels.GROK_4_1_FAST,
+        name: AIModels.GEMINI_2_5_PRO,
         reasoning_effort: 'high',
         max_tokens: 8000,
         temperature: 1,
-        fallbackModel: AIModels.GEMINI_2_5_PRO,
+        fallbackModel: AIModels.GEMINI_2_5_FLASH,
     },
     fileRegeneration: {
-        name: AIModels.GROK_4_1_FAST_NON_REASONING,
+        name: AIModels.GEMINI_2_5_FLASH,
         reasoning_effort: 'low',
         max_tokens: 16000,
         temperature: 0.0,
@@ -140,15 +141,15 @@ const DEFAULT_AGENT_CONFIG: AgentConfig = {
         ...SHARED_IMPLEMENTATION_CONFIG,
     },
     phaseGeneration: {
-        name: AIModels.GEMINI_3_FLASH_PREVIEW,
+        name: AIModels.GEMINI_3_PRO_PREVIEW,  // Pro model for finance
         ...SHARED_IMPLEMENTATION_CONFIG,
     },
     firstPhaseImplementation: {
-        name: AIModels.GEMINI_3_FLASH_PREVIEW,
+        name: AIModels.GEMINI_3_PRO_PREVIEW,  // Pro model for finance
         ...SHARED_IMPLEMENTATION_CONFIG,
     },
     phaseImplementation: {
-        name: AIModels.GEMINI_3_FLASH_PREVIEW,
+        name: AIModels.GEMINI_3_PRO_PREVIEW,  // Pro model for finance
         ...SHARED_IMPLEMENTATION_CONFIG,
     },
     conversationalResponse: {

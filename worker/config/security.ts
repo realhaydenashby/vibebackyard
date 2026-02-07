@@ -41,12 +41,12 @@ export function getConfigurableSecurityDefaults(): ConfigurableSecuritySettings 
  */
 export function getAllowedOrigins(env: Env): string[] {
     const origins: string[] = [];
-    
+
     // Production domains
     if (env.CUSTOM_DOMAIN) {
         origins.push(`https://${env.CUSTOM_DOMAIN}`);
     }
-    
+
     // Development origins (only in development)
     if (isDev(env)) {
         origins.push('http://localhost:3000');
@@ -56,32 +56,58 @@ export function getAllowedOrigins(env: Env): string[] {
         origins.push('http://127.0.0.1:5173');
         origins.push('http://127.0.0.1:8787');
     }
-    
+
     return origins;
+}
+
+/**
+ * Check if origin is from a preview subdomain
+ * Preview apps run on subdomains like xyz.vov1.app
+ */
+export function isPreviewSubdomain(env: Env, origin: string): boolean {
+    if (!origin || !env.CUSTOM_DOMAIN) return false;
+
+    // Check for preview subdomain pattern: https://*.{CUSTOM_DOMAIN}
+    // Also support CUSTOM_PREVIEW_DOMAIN if configured
+    const previewDomain = env.CUSTOM_PREVIEW_DOMAIN || env.CUSTOM_DOMAIN;
+    return origin.endsWith(`.${previewDomain}`) && origin.startsWith('https://');
 }
 
 export function isOriginAllowed(env: Env, origin: string): boolean {
     const allowedOrigins = getAllowedOrigins(env);
     if (!origin) return false;
-    
-    // Check against allowed origins
-    return allowedOrigins.includes(origin);
+
+    // Check against static allowed origins
+    if (allowedOrigins.includes(origin)) {
+        return true;
+    }
+
+    // Check for preview subdomain origins (for Agency mode / Plaid proxy)
+    return isPreviewSubdomain(env, origin);
 }
 
 /**
  * CORS Configuration
  * Strict origin validation with environment-aware settings
+ * Supports both static origins and dynamic preview subdomains
  */
 export function getCORSConfig(env: Env): CORSConfig {
     return {
-        origin: getAllowedOrigins(env),
+        // Use dynamic origin function to support preview subdomains
+        origin: (origin: string) => {
+            if (isOriginAllowed(env, origin)) {
+                return origin;
+            }
+            return null;
+        },
         allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
         allowHeaders: [
             'Content-Type',
             'Authorization',
             'X-Request-ID',
             'X-Session-Token',
-            'X-CSRF-Token'
+            'X-CSRF-Token',
+            'X-Preview-Token'  // For Agency mode Plaid proxy
         ],
         exposeHeaders: [
             'X-Request-ID',

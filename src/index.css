@@ -6,17 +6,43 @@
   src:  url('./assets/fonts/DepartureMono-Regular.woff') 
 }
 
-/* Subtle chat edge throb effect */
+/* Floating gradient orbs animation */
+@keyframes float-smooth {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  25% {
+    transform: translate(40px, -30px) scale(1.05);
+  }
+  50% {
+    transform: translate(-30px, 40px) scale(0.95);
+  }
+  75% {
+    transform: translate(30px, 20px) scale(1.02);
+  }
+}
+
+/* Landing page input pill - focus glow */
+.landing-input-pill:focus-within {
+  border-color: rgba(39, 215, 255, 0.35) !important;
+  box-shadow: 0 0 0 3px rgba(39, 215, 255, 0.1), 0 0 20px rgba(39, 215, 255, 0.06);
+}
+
+.landing-input-pill textarea::placeholder {
+  color: rgba(244, 246, 255, 0.3);
+}
+
+/* Subtle chat edge throb effect - updated to blue */
 @keyframes chat-edge-throb {
   0%, 100% {
     box-shadow:
-      0 0 0 0 rgba(246, 130, 31, 0.10),
-      inset 0 0 0 1px rgba(246, 130, 31, 0.16);
+      0 0 0 0 hsla(217, 91%, 75%, 0.10),
+      inset 0 0 0 1px hsla(217, 91%, 75%, 0.16);
   }
   50% {
     box-shadow:
-      0 0 0 6px rgba(255, 61, 0, 0.08),
-      inset 0 0 0 2px rgba(255, 61, 0, 0.22);
+      0 0 0 6px hsla(217, 91%, 60%, 0.08),
+      inset 0 0 0 2px hsla(217, 91%, 60%, 0.22);
   }
 }
 
@@ -143,18 +169,18 @@
 		oklch(0.922 0 0);
 	--ring:
 		oklch(0.708 0 0);
-	--build-accent-color: #ff3d00;
-	--build-chat-colors-bg-1: #e7e7e7;
-	--build-chat-colors-bg-2: #f6f6f6;
-	--build-chat-colors-bg-3: #fbfbfc;
+	--build-accent-color: hsl(217, 91%, 60%);
+	--build-chat-colors-bg-1: hsl(220, 40%, 92%);
+	--build-chat-colors-bg-2: hsl(220, 40%, 95%);
+	--build-chat-colors-bg-3: hsl(220, 40%, 97%);
 	--build-chat-colors-bg-4: #ffffff;
-	--build-chat-colors-border-primary: #e5e5e5;
-	--build-chat-colors-border-secondary: #eeeeee;
-	--build-chat-colors-border-tertiary: #eeeeee;
-	--build-chat-colors-danger: #950000cc;
-	--build-chat-colors-brand-heavy: #f6821f;
-	--build-chat-colors-brand-primary: #f6821f;
-	--build-chat-colors-brand-subtle: #f6821f;
+	--build-chat-colors-border-primary: hsl(220, 20%, 85%);
+	--build-chat-colors-border-secondary: hsl(220, 20%, 90%);
+	--build-chat-colors-border-tertiary: hsl(220, 20%, 90%);
+	--build-chat-colors-danger: #dc2626;
+	--build-chat-colors-brand-heavy: hsl(217, 91%, 50%);
+	--build-chat-colors-brand-primary: hsl(217, 91%, 60%);
+	--build-chat-colors-brand-subtle: hsl(217, 91%, 75%);
 	--build-chat-colors-text-inverted: #ffffff;
 	--build-chat-colors-text-primary: #0a0a0a;
 	--build-chat-colors-text-secondary: #171717;
@@ -176,9 +202,9 @@
 	--build-chat-colors-border-primary: #393939;
 	--build-chat-colors-border-secondary: #454746;
 	--build-chat-colors-border-tertiary: #454746;
-	--build-chat-colors-brand-heavy: #f6821f;
-	--build-chat-colors-brand-primary: #f6821f;
-	--build-chat-colors-brand-subtle: #f6821f;
+	--build-chat-colors-brand-heavy: hsl(217, 91%, 45%);
+	--build-chat-colors-brand-primary: hsl(217, 91%, 55%);
+	--build-chat-colors-brand-subtle: hsl(217, 91%, 65%);
 	--build-chat-colors-text-inverted: #000000;
 	--build-chat-colors-text-primary: #ffffff;
 	--build-chat-colors-text-secondary: #cdcaca;

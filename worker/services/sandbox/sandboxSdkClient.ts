@@ -141,7 +141,7 @@ export class SandboxSdkClient extends BaseSandboxService {
 
     private getSandbox(): SandboxType {
         if (!this.sandbox) {
-            this.sandbox = getSandbox(env.Sandbox, this.sandboxId);
+            this.sandbox = getSandbox(env.sandbox, this.sandboxId);
         }
         return this.sandbox;
     }
@@ -878,16 +878,30 @@ export class SandboxSdkClient extends BaseSandboxService {
 
     private async setLocalEnvVars(instanceId: string, localEnvVars: Record<string, string>): Promise<void> {
         try {
-            // Write .dev.vars file - tools will read environment variables from this file
             const session = await this.getInstanceSession(instanceId);
             const envVarsContent = Object.entries(localEnvVars)
                 .map(([key, value]) => `${key}=${value}`)
                 .join('\n');
-            const result = await session.writeFile(`/workspace/${instanceId}/.dev.vars`, envVarsContent);
-            if (!result.success) {
+
+            // Write to both .dev.vars (for Cloudflare Workers) and .env (for Vite frontend)
+            // Vite reads VITE_* variables from .env files at build/dev time
+            const [devVarsResult, envResult] = await Promise.all([
+                session.writeFile(`/workspace/${instanceId}/.dev.vars`, envVarsContent),
+                session.writeFile(`/workspace/${instanceId}/.env`, envVarsContent)
+            ]);
+
+            if (!devVarsResult.success) {
                 throw new Error('Failed to write .dev.vars file');
             }
-            this.logger.info('Environment variables written to .dev.vars', { instanceId, varCount: Object.keys(localEnvVars).length });
+            if (!envResult.success) {
+                throw new Error('Failed to write .env file');
+            }
+
+            this.logger.info('Environment variables written to .dev.vars and .env', {
+                instanceId,
+                varCount: Object.keys(localEnvVars).length,
+                vars: Object.keys(localEnvVars)
+            });
         } catch (error) {
             this.logger.error(`Error setting local environment variables: ${error}`);
             throw error;

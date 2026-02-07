@@ -35,6 +35,7 @@ import { MainContentPanel } from './components/main-content-panel';
 import { ChatInput } from './components/chat-input';
 import { useVault } from '@/hooks/use-vault';
 import { VaultUnlockModal } from '@/components/vault';
+import { SoftGradientBackground } from '@/components/SoftGradientBackground';
 
 const isPhasicBlueprint = (blueprint?: BlueprintType | null): blueprint is PhasicBlueprint =>
 	!!blueprint && 'implementationRoadmap' in blueprint;
@@ -646,8 +647,9 @@ export default function Chat() {
 	}
 
 	return (
-		<div className="size-full flex flex-col min-h-0 text-text-primary">
-			<div className="flex-1 flex min-h-0 overflow-hidden justify-center">
+		<div className="size-full flex flex-col min-h-0 text-text-primary relative">
+			<SoftGradientBackground />
+			<div className="flex-1 flex min-h-0 overflow-hidden justify-center relative z-10">
 				<motion.div
 					layout="position"
 					className="flex-1 shrink-0 flex flex-col basis-0 max-w-lg relative z-10 h-full min-h-0"
