@@ -414,7 +414,9 @@ export class PhasicCodingBehavior extends BaseCodingBehavior<PhasicState> implem
 
             const phasesCounter = this.decrementPhasesCounter();
 
-            if ((phaseConcept.lastPhase || phasesCounter <= 0) && this.state.pendingUserInputs.length === 0) return {currentDevState: CurrentDevState.FINALIZING};
+            // Only finalize if no pending inputs AND no user suggestions were driving this phase
+            const hasUserDrivenContext = !!userContext?.suggestions && userContext.suggestions.length > 0;
+            if ((phaseConcept.lastPhase || phasesCounter <= 0) && this.state.pendingUserInputs.length === 0 && !hasUserDrivenContext) return {currentDevState: CurrentDevState.FINALIZING};
             return {currentDevState: CurrentDevState.PHASE_GENERATING};
         } catch (error) {
             this.logger.error("Error implementing phase", error);

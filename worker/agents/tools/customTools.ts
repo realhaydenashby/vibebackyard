@@ -55,6 +55,9 @@ export function buildTools(
         createWaitForDebugTool(agent, logger),
         createRenameProjectTool(agent, logger),
         createAlterBlueprintTool(agent, logger),
+        // Code inspection and modification tools for post-build editing
+        createReadFilesTool(agent, logger),
+        createRegenerateFileTool(agent, logger),
         // Git tool (safe version - no reset for user conversations)
         createGitTool(agent, logger, { excludeCommands: ['reset'] }),
         // Deep autonomous debugging assistant tool

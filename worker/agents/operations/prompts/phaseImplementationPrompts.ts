@@ -20,6 +20,8 @@ export const PHASE_IMPLEMENTATION_SYSTEM_PROMPT = `You are implementing a phase 
 - No whole-store selectors.
 </RELIABILITY>
 
+${PROMPT_UTILS.UI_GUIDELINES}
+
 ${PROMPT_UTILS.UI_NON_NEGOTIABLES_V3}
 
 ${PROMPT_UTILS.COMMON_PITFALLS}
@@ -36,9 +38,7 @@ ${PROMPT_UTILS.COMMON_DEP_DOCUMENTATION}
 
 <BLUEPRINT>
 {{blueprint}}
-</BLUEPRINT>
-
-{{financeCodePatterns}}`;
+</BLUEPRINT>`;
 
 const PHASE_IMPLEMENTATION_USER_PROMPT_TEMPLATE = `Phase Implementation
 

@@ -40,11 +40,11 @@ const COMMON_AGENT_CONFIGS = {
     },
 } as const;
 
-// v1.1: Finance-only platform - use higher reasoning for better data architecture
+// v1.2: Balanced config - high reasoning but more creative output for visual variety
 const SHARED_IMPLEMENTATION_CONFIG = {
-    reasoning_effort: 'high' as const,  // Increased for finance apps
-    max_tokens: 64000,                  // More tokens for complex code
-    temperature: 0.3,                   // More deterministic
+    reasoning_effort: 'high' as const,
+    max_tokens: 64000,
+    temperature: 0.6,                   // Higher for visual variety across apps
     fallbackModel: AIModels.GEMINI_2_5_PRO,
 };
 
@@ -127,7 +127,7 @@ const DEFAULT_AGENT_CONFIG: AgentConfig = {
         name: AIModels.GEMINI_2_5_FLASH_LITE,
         max_tokens: 2000,
         fallbackModel: AIModels.GEMINI_2_5_FLASH,
-        temperature: 0.6,
+        temperature: 1.0,
     },
     blueprint: {
         name: AIModels.GEMINI_3_FLASH_PREVIEW,
@@ -156,7 +156,7 @@ const DEFAULT_AGENT_CONFIG: AgentConfig = {
         name: AIModels.GEMINI_2_5_FLASH,
         reasoning_effort: 'low',
         max_tokens: 4000,
-        temperature: 0,
+        temperature: 0.5,
         fallbackModel: AIModels.GEMINI_2_5_PRO,
     },
     deepDebugger: {

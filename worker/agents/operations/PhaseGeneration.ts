@@ -79,8 +79,6 @@ ${PROMPT_UTILS.COMMON_DEP_DOCUMENTATION}
 {{blueprint}}
 </BLUEPRINT>
 
-{{financeArchitectureRules}}
-
 <DEPENDENCIES>
 **Available Dependencies:** You can ONLY import and use dependencies from the following==>
 
