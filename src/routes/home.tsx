@@ -186,16 +186,14 @@ export default function Home() {
 
 						{/* Logo */}
 						<h1
-							className="font-[departureMono] text-6xl tracking-tight mb-2 select-none"
-							style={{ color: '#F4F6FF' }}
+							className="font-[inclusiveSans] text-6xl tracking-tight mb-2 select-none text-text-primary"
 						>
-							vo<span style={{ color: '#27D7FF' }}>&#9661;</span>1
+							vo<span className="text-[#27D7FF]">&#9661;</span>1
 						</h1>
 
 						{/* Tagline */}
 						<p
-							className="text-sm tracking-[0.3em] uppercase mb-10 font-light"
-							style={{ color: 'rgba(244, 246, 255, 0.5)' }}
+							className="text-sm tracking-[0.3em] uppercase mb-10 font-light text-text-tertiary"
 						>
 							Financial Clarity
 						</p>
@@ -208,36 +206,27 @@ export default function Home() {
 								const query = textareaRef.current!.value;
 								handleCreateApp(query, projectMode);
 							}}
-							className="flex z-10 flex-col w-full rounded-full px-5 py-3 transition-all duration-300 landing-input-pill"
-							style={{
-								background: 'rgba(244, 246, 255, 0.06)',
-								border: '1px solid rgba(244, 246, 255, 0.1)',
-							}}
+							className="flex z-10 flex-col w-full rounded-full px-5 py-3 transition-all duration-300 landing-input-pill bg-bg-2 border border-border-secondary"
 						>
 							<div
 								className={clsx(
 									"flex items-center gap-3",
-									isDragging && "ring-2 ring-[#27D7FF] ring-offset-2 ring-offset-[#07080D] rounded-full"
+									isDragging && "ring-2 ring-[#27D7FF] ring-offset-2 ring-offset-bg-3 rounded-full"
 								)}
 								{...dragHandlers}
 							>
 								{isDragging && (
-									<div className="absolute inset-0 flex items-center justify-center rounded-full z-30 pointer-events-none"
-										style={{ background: 'rgba(39, 215, 255, 0.08)' }}
-									>
-										<p className="text-sm font-medium" style={{ color: '#27D7FF' }}>Drop images here</p>
+									<div className="absolute inset-0 flex items-center justify-center rounded-full z-30 pointer-events-none bg-[rgba(39,215,255,0.08)]">
+										<p className="text-sm font-medium text-[#27D7FF]">Drop images here</p>
 									</div>
 								)}
 								<textarea
-									className="flex-1 resize-none ring-0 z-20 outline-0 bg-transparent text-sm leading-relaxed"
+									className="flex-1 resize-none ring-0 z-20 outline-0 bg-transparent text-sm leading-relaxed text-text-primary placeholder:text-text-tertiary"
 									name="query"
 									rows={1}
 									value={query}
 									placeholder={`Create a ${currentPlaceholderText}`}
 									ref={textareaRef}
-									style={{
-										color: '#F4F6FF',
-									}}
 									onChange={(e) => {
 										setQuery(e.target.value);
 										adjustTextareaHeight();
@@ -259,11 +248,12 @@ export default function Home() {
 									<button
 										type="submit"
 										disabled={!query.trim()}
-										className="flex items-center justify-center w-9 h-9 rounded-full transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed"
-										style={{
-											backgroundColor: query.trim() ? '#27D7FF' : 'rgba(244, 246, 255, 0.1)',
-											color: query.trim() ? '#07080D' : 'rgba(244, 246, 255, 0.3)',
-										}}
+										className={clsx(
+											"flex items-center justify-center w-9 h-9 rounded-full transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed",
+											query.trim()
+												? "bg-[#27D7FF] text-[#07080D]"
+												: "bg-bg-4 text-text-tertiary"
+										)}
 									>
 										<ArrowUp className="w-4 h-4" />
 									</button>
@@ -298,15 +288,10 @@ export default function Home() {
 								images={images}
 								onRemove={removeImage}
 							/>
-							<div className="flex items-start gap-2 px-4 py-3 mt-2 rounded-xl"
-								style={{
-									background: 'rgba(39, 215, 255, 0.06)',
-									border: '1px solid rgba(39, 215, 255, 0.15)',
-								}}
-							>
-								<Info className="size-4 flex-shrink-0 mt-0.5" style={{ color: '#27D7FF' }} />
-								<p className="text-xs leading-relaxed" style={{ color: 'rgba(244, 246, 255, 0.5)' }}>
-									<span className="font-medium" style={{ color: 'rgba(244, 246, 255, 0.7)' }}>Images Beta:</span> Images guide app layout and design but may not be replicated exactly.
+							<div className="flex items-start gap-2 px-4 py-3 mt-2 rounded-xl bg-[rgba(39,215,255,0.06)] border border-[rgba(39,215,255,0.15)]">
+								<Info className="size-4 flex-shrink-0 mt-0.5 text-[#27D7FF]" />
+								<p className="text-xs leading-relaxed text-text-tertiary">
+									<span className="font-medium text-text-secondary">Images Beta:</span> Images guide app layout and design but may not be replicated exactly.
 								</p>
 							</div>
 						</motion.div>
@@ -326,8 +311,8 @@ export default function Home() {
 							className={clsx('max-w-6xl mx-auto px-4 z-10', images.length > 0 ? 'mt-10' : 'mt-16 mb-8')}
 						>
 							<div className='flex flex-col items-start'>
-								<h2 className="text-2xl font-medium" style={{ color: 'rgba(244, 246, 255, 0.8)' }}>My Projects</h2>
-								<div className="text-md font-light mb-4" style={{ color: 'rgba(244, 246, 255, 0.35)' }}>Continue where you left off</div>
+								<h2 className="text-2xl font-medium text-text-primary">My Projects</h2>
+								<div className="text-md font-light mb-4 text-text-tertiary">Continue where you left off</div>
 								<motion.div
 									layout
 									transition={{ duration: 0.4 }}
@@ -361,8 +346,8 @@ export default function Home() {
 							className={clsx('max-w-6xl mx-auto px-4 z-10', (images.length > 0 || projectsReady) ? 'mt-10' : 'mt-16 mb-8')}
 						>
 							<div className='flex flex-col items-start'>
-								<h2 className="text-2xl font-medium" style={{ color: 'rgba(244, 246, 255, 0.8)' }}>Discover</h2>
-								<div ref={discoverLinkRef} className="text-md font-light mb-4 hover:underline underline-offset-4 select-text cursor-pointer" style={{ color: 'rgba(244, 246, 255, 0.35)' }} onClick={() => navigate('/discover')} >View All</div>
+								<h2 className="text-2xl font-medium text-text-primary">Discover</h2>
+								<div ref={discoverLinkRef} className="text-md font-light mb-4 hover:underline underline-offset-4 select-text cursor-pointer text-text-tertiary" onClick={() => navigate('/discover')} >View All</div>
 								<motion.div
 									layout
 									transition={{ duration: 0.4 }}
@@ -544,14 +529,14 @@ export const CurvedArrow: React.FC<ArrowProps> = ({
 					<feDisplacementMap in="SourceGraphic" in2="noise" scale="1" xChannelSelector="R" yChannelSelector="G" />
 				</filter>
 				<marker id="discover-arrowhead" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto" markerUnits="strokeWidth" opacity={0.20}>
-					<path d="M 0 1.2 L 7 4" stroke="rgba(244, 246, 255, 0.35)" strokeWidth="1.6" strokeLinecap="round" fill="none" />
-					<path d="M 0 6.8 L 7 4" stroke="rgba(244, 246, 255, 0.35)" strokeWidth="1.2" strokeLinecap="round" fill="none" />
+					<path d="M 0 1.2 L 7 4" className="stroke-text-tertiary" strokeWidth="1.6" strokeLinecap="round" fill="none" />
+					<path d="M 0 6.8 L 7 4" className="stroke-text-tertiary" strokeWidth="1.2" strokeLinecap="round" fill="none" />
 				</marker>
 			</defs>
 
 			<path
 				d={d}
-				stroke="rgba(244, 246, 255, 0.15)"
+				className="stroke-text-tertiary opacity-40"
 				strokeWidth={1.6}
 				fill="none"
 				strokeLinecap="round"
@@ -562,7 +547,7 @@ export const CurvedArrow: React.FC<ArrowProps> = ({
 			<g filter="url(#discover-squiggle)">
 				<path
 					d={d}
-					stroke="rgba(244, 246, 255, 0.08)"
+					className="stroke-text-tertiary opacity-20"
 					strokeWidth={1}
 					fill="none"
 					strokeLinecap="round"

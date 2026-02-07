@@ -3,7 +3,12 @@
 
 @font-face{
   font-family: "departureMono";
-  src:  url('./assets/fonts/DepartureMono-Regular.woff') 
+  src:  url('./assets/fonts/DepartureMono-Regular.woff')
+}
+
+@font-face{
+  font-family: "inclusiveSans";
+  src: local('Inclusive Sans'), local('InclusiveSans-Regular');
 }
 
 /* Floating gradient orbs animation */
@@ -26,10 +31,6 @@
 .landing-input-pill:focus-within {
   border-color: rgba(39, 215, 255, 0.35) !important;
   box-shadow: 0 0 0 3px rgba(39, 215, 255, 0.1), 0 0 20px rgba(39, 215, 255, 0.06);
-}
-
-.landing-input-pill textarea::placeholder {
-  color: rgba(244, 246, 255, 0.3);
 }
 
 /* Subtle chat edge throb effect - updated to blue */

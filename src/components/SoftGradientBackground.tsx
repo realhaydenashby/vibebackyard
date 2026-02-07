@@ -1,6 +1,6 @@
 export function SoftGradientBackground() {
   return (
-    <div className="fixed inset-0 -z-10 overflow-hidden" style={{ backgroundColor: '#07080D' }}>
+    <div className="fixed inset-0 -z-10 overflow-hidden bg-bg-3">
       {/* Subtle cyan glow - top right */}
       <div
         className="absolute rounded-full"
